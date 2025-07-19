@@ -17,12 +17,6 @@ let
     gp = "git push";
     gs = "git status";
     gt = "git tag";
-
-    jd = "jj desc";
-    jf = "jj git fetch";
-    jn = "jj new";
-    jp = "jj git push";
-    js = "jj st";
   } // (if isLinux then {
     # Two decades of using a Mac has made this such a strong memory
     # that I'm just going to keep it consistent.
@@ -65,20 +59,9 @@ in {
     pkgs.ripgrep
     pkgs.tree
     pkgs.watch
-
-    pkgs.gopls
-
     # Node is required for Copilot.vim
     pkgs.nodejs
-  ] ++ (lib.optionals isDarwin [
-    # This is automatically setup on Linux
-    pkgs.cachix
-    pkgs.tailscale
-  ]) ++ (lib.optionals (isLinux && !isWSL) [
-    pkgs.chromium
-    pkgs.firefox
-    pkgs.valgrind
-  ]);
+  ] 
 
   #---------------------------------------------------------------------
   # Env vars and dotfiles
@@ -91,105 +74,16 @@ in {
     EDITOR = "nvim";
     PAGER = "less -FirSwX";
     MANPAGER = "${manpager}/bin/manpager";
-
-    AMP_API_KEY = "op://Private/Amp_API/credential";
-    OPENAI_API_KEY = "op://Private/OpenAPI_Personal/credential";
   } // (if isDarwin then {
     # See: https://github.com/NixOS/nixpkgs/issues/390751
     DISPLAY = "nixpkgs-390751";
   } else {});
-
-  home.file = {
-    ".gdbinit".source = ./gdbinit;
-    ".inputrc".source = ./inputrc;
-  };
 
   #---------------------------------------------------------------------
   # Programs
   #---------------------------------------------------------------------
 
   programs.gpg.enable = !isDarwin;
-
-  programs.bash = {
-    enable = true;
-    shellOptions = [];
-    historyControl = [ "ignoredups" "ignorespace" ];
-    initExtra = builtins.readFile ./bashrc;
-    shellAliases = shellAliases;
-  };
-
-  programs.direnv= {
-    enable = true;
-
-    config = {
-      whitelist = {
-        prefix= [
-          "$HOME/code/go/src/github.com/hashicorp"
-          "$HOME/code/go/src/github.com/mitchellh"
-        ];
-
-        exact = ["$HOME/.envrc"];
-      };
-    };
-  };
-
-  programs.git = {
-    enable = true;
-    userName = "Deepak Narayan";
-    userEmail = "m@mitchellh.com";
-    signing = {
-      key = "523D5DC389D273BC";
-      signByDefault = true;
-    };
-    aliases = {
-      cleanup = "!git branch --merged | grep  -v '\\*\\|master\\|develop' | xargs -n 1 -r git branch -d";
-      prettylog = "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(r) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative";
-      root = "rev-parse --show-toplevel";
-    };
-    extraConfig = {
-      branch.autosetuprebase = "always";
-      color.ui = true;
-      core.askPass = ""; # needs to be empty to use terminal for ask pass
-      credential.helper = "store"; # want to make this more secure
-      github.user = "mitchellh";
-      push.default = "tracking";
-      init.defaultBranch = "main";
-    };
-  };
-
-  programs.go = {
-    enable = true;
-    goPath = "code/go";
-    goPrivate = [ "github.com/mitchellh" "github.com/hashicorp" "rfc822.mx" ];
-  };
-
-  programs.jujutsu = {
-    enable = true;
-
-    # I don't use "settings" because the path is wrong on macOS at
-    # the time of writing this.
-  };
-
-  programs.tmux = {
-    enable = true;
-    terminal = "xterm-256color";
-    shortcut = "l";
-    secureSocket = false;
-    mouse = true;
-
-    extraConfig = ''
-      set -ga terminal-overrides ",*256col*:Tc"
-
-      set -g @dracula-show-battery false
-      set -g @dracula-show-network false
-      set -g @dracula-show-weather false
-
-      bind -n C-k send-keys "clear"\; send-keys "Enter"
-
-      run-shell ${sources.tmux-pain-control}/pain_control.tmux
-      run-shell ${sources.tmux-dracula}/dracula.tmux
-    '';
-  };
 
   programs.alacritty = {
     enable = !isWSL;
@@ -206,11 +100,6 @@ in {
         { key = "Subtract"; mods = "Command"; action = "DecreaseFontSize"; }
       ];
     };
-  };
-
-  programs.kitty = {
-    enable = !isWSL;
-    extraConfig = builtins.readFile ./kitty;
   };
 
   programs.i3status = {
@@ -230,22 +119,9 @@ in {
     };
   };
 
-  programs.neovim = {
-    enable = true;
-    package = inputs.neovim-nightly-overlay.packages.${pkgs.system}.default;
-  };
-
-  programs.atuin = {
-    enable = true;
-  };
-
-  programs.nushell = {
-    enable = true;
-  };
-
-  programs.oh-my-posh = {
-    enable = true;
-  };
+  imports = [
+    ../../pkgs/defaultpkgs.nix
+  ]
 
   services.gpg-agent = {
     enable = isLinux;
@@ -254,15 +130,5 @@ in {
     # cache the keys forever so we don't get asked for a password
     defaultCacheTtl = 31536000;
     maxCacheTtl = 31536000;
-  };
-
-  xresources.extraConfig = builtins.readFile ./Xresources;
-
-  # Make cursor not tiny on HiDPI screens
-  home.pointerCursor = lib.mkIf (isLinux && !isWSL) {
-    name = "Vanilla-DMZ";
-    package = pkgs.vanilla-dmz;
-    size = 128;
-    x11.enable = true;
   };
 }
