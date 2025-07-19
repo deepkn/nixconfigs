@@ -122,6 +122,8 @@ in {
 
   imports = [
     ../../pkgs/defaultpkgs.nix
+  ] ++ lib.optionals isWSL [
+    ../../pkgs/wsl2pkgs.nix
   ];
 
   services.gpg-agent = {

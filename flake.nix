@@ -46,6 +46,11 @@
       url = "github:nix-community/neovim-nightly-overlay";
     };
 
+    nix-ld = {
+      url = "github:Mic92/nix-ld";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Non-flakes
     nvim-codecompanion.url = "github:olimorris/codecompanion.nvim";
     nvim-codecompanion.flake = false;
