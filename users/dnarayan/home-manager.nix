@@ -60,6 +60,7 @@ in {
     pkgs.tree
     pkgs.watch
     pkgs.vim
+    pkgs.wget
     # Node is required for Copilot.vim
     pkgs.nodejs
   ]; 
