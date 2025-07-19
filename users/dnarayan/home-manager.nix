@@ -59,9 +59,10 @@ in {
     pkgs.ripgrep
     pkgs.tree
     pkgs.watch
+    pkgs.vim
     # Node is required for Copilot.vim
     pkgs.nodejs
-  ] 
+  ]; 
 
   #---------------------------------------------------------------------
   # Env vars and dotfiles
@@ -121,7 +122,7 @@ in {
 
   imports = [
     ../../pkgs/defaultpkgs.nix
-  ]
+  ];
 
   services.gpg-agent = {
     enable = isLinux;
